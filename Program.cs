@@ -1,8 +1,12 @@
-using MassTransit;
-using Fcg.Contracts;
+using NotificationsAPI.Infrastructure.DependencyInjection;
+
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddMassTransit(x => { x.AddConsumer<UserCreatedConsumer>(); x.AddConsumer<PaymentProcessedConsumer>(); x.UsingRabbitMq((context, cfg) => { cfg.Host(builder.Configuration["RabbitMq:Host"] ?? "localhost", "/", h => { h.Username(builder.Configuration["RabbitMq:Username"] ?? "guest"); h.Password(builder.Configuration["RabbitMq:Password"] ?? "guest"); }); cfg.ReceiveEndpoint(builder.Configuration["RabbitMq:UserQueue"] ?? "notifications-users", e => e.ConfigureConsumer<UserCreatedConsumer>(context)); cfg.ReceiveEndpoint(builder.Configuration["RabbitMq:PaymentQueue"] ?? "notifications-payments", e => e.ConfigureConsumer<PaymentProcessedConsumer>(context)); }); });
-builder.Services.AddEndpointsApiExplorer(); builder.Services.AddSwaggerGen(); var app = builder.Build(); app.UseSwagger(); app.UseSwaggerUI(); app.MapGet("/health", () => Results.Ok(new { status = "healthy" })); app.Run();
-public class UserCreatedConsumer(ILogger<UserCreatedConsumer> logger) : IConsumer<UserCreatedEvent> { public Task Consume(ConsumeContext<UserCreatedEvent> c) { logger.LogInformation("E-MAIL DE BOAS-VINDAS | Para: {Email} | Ola, {Name}! Bem-vindo a FCG.", c.Message.Email, c.Message.Name); return Task.CompletedTask; } }
-public class PaymentProcessedConsumer(ILogger<PaymentProcessedConsumer> logger) : IConsumer<PaymentProcessedEvent> { public Task Consume(ConsumeContext<PaymentProcessedEvent> c) { if (c.Message.Status == PaymentStatus.Approved) logger.LogInformation("E-MAIL DE COMPRA | Usuario: {UserId} | Jogo: {GameId} | Valor: {Price} | Compra confirmada.", c.Message.UserId, c.Message.GameId, c.Message.Price); return Task.CompletedTask; } }
-namespace Fcg.Contracts { public enum PaymentStatus { Approved, Rejected } public record UserCreatedEvent(Guid UserId, string Name, string Email, DateTimeOffset CreatedAt); public record PaymentProcessedEvent(Guid OrderId, Guid UserId, Guid GameId, decimal Price, PaymentStatus Status, string? Reason, DateTimeOffset ProcessedAt); }
+
+builder.Services.AddNotificationsApi(builder.Configuration);
+
+var app = builder.Build();
+
+await app.InitializeNotificationsDatabaseAsync();
+app.UseNotificationsApi();
+
+await app.RunAsync();

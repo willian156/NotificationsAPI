@@ -16,6 +16,7 @@ dotnet run --project NotificationsAPI.sln
 - `RabbitMq__Password`
 - `RabbitMq__UserQueue`
 - `RabbitMq__PaymentQueue`
+- `ConnectionStrings__Database` (PostgreSQL exclusivo do serviço)
 
 ## Docker
 

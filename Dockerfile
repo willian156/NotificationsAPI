@@ -3,7 +3,7 @@ WORKDIR /src
 COPY NotificationsAPI.csproj .
 RUN dotnet restore
 COPY . .
-RUN dotnet publish -c Release -o /app --no-restore /p:UseAppHost=false
+RUN dotnet publish NotificationsAPI.csproj -c Release -o /app --no-restore /p:UseAppHost=false
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=build /app .
