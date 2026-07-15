@@ -1,4 +1,5 @@
 using MassTransit;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using NotificationsAPI.Application.Notifications;
