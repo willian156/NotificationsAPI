@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: notifications-api
-          image: fcg/notifications-api:latest
+          image: fcg/notifications-api:cors-v1
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
@@ -23,7 +23,13 @@ spec:
             - configMapRef:
                 name: notifications-api-config
             - secretRef:
-                name: notifications-api-secrets
+                name: fcg-secrets
+          env:
+            - name: ConnectionStrings__Database
+              valueFrom:
+                secretKeyRef:
+                  name: fcg-secrets
+                  key: NotificationsDatabase
           readinessProbe:
             httpGet:
               path: /health
