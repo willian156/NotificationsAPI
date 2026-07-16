@@ -17,6 +17,7 @@ public static class NotificationsApiConfiguration
         services.AddNotificationsApplication();
         services.AddNotificationsPersistence(configuration);
         services.AddNotificationsMessaging(configuration);
+        services.AddApiCors(configuration);
         services.AddControllers();
         services.AddEndpointsApiExplorer();
         services.AddSwaggerWithBearerAuthentication();
@@ -27,8 +28,19 @@ public static class NotificationsApiConfiguration
     {
         app.UseSwagger();
         app.UseSwaggerUI();
+        app.UseCors("Frontend");
         app.MapControllers();
         return app;
+    }
+
+    private static void AddApiCors(this IServiceCollection services, IConfiguration configuration)
+    {
+        var allowedOrigins = configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+        services.AddCors(options =>
+            options.AddPolicy("Frontend", policy =>
+                policy.WithOrigins(allowedOrigins).AllowAnyHeader().AllowAnyMethod()
+            )
+        );
     }
 
     public static async Task InitializeNotificationsDatabaseAsync(this WebApplication app)
